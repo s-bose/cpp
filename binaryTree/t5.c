@@ -7,6 +7,7 @@ typedef struct node {
     struct node* left;
     struct node* right;
     struct node* parent;
+    int threadnode;
 }tnode;
 
 
@@ -45,17 +46,165 @@ tnode* findnode(tnode* root, int data){
 }
 
 int main(){
-    int i, ans, data;
+    int i, ans, data, mode;
     int* arr = (int*)malloc(sizeof(int));
     tnode* root = (tnode*)malloc(sizeof(tnode));
-    tnode* key, *succ;
+    tnode* key, *succ, *pred;
     printf("Enter the root data: ");
     scanf("%d", &root->data);
     root->left = root->right = root->parent = NULL;
+    root->threadnode = 0;
     insert(root);
     printf("The inorder traversal is: \n");
     inorder(root);
-    
+
+    printf("\n1.inorder threading one way\n2.inorder threading two way\n3.preorder threading one way\n4.preorder threading two way\n");
+    scanf("%d", &ans);
+    switch(mode){
+        case 1:
+            threaded_oneway_inord(root, root);
+            break;
+        case 2:
+            threaded_twoway_inord(root, root);
+            break;
+        case 3:
+            threaded_oneway_preord(root, root);
+            break;
+        case 4:
+            threaded_twoway_preord(root, root);
+            break;
+    }
+    while (1){
+        printf("\n1.PreOrder successor\n2.InOrder successor\n3.PostOrder successor\n4.InOrder predecessor\n5.PreOrder predecessor\n6.PostOrder predecessor\n7.exit\n");
+        scanf("%d", &ans);
+        switch(ans){
+            case 1:
+                printf("The preorder display is: \n");
+                preorder(root);
+                printf("\n");
+                printf("Enter the node you want to find preorder successor of: ");
+                scanf("%d", &data);
+                key = findnode(root, data);
+                if (key->threadnode == 1 &&  (mode == 3 || mode == 4)) {
+                    //preorder threading one way or two way
+                    succ = key->right;
+                    printf("the preorder successor of %d is %d\n", data, succ->data);
+                    break;
+                }
+                else {
+                    succ = preordersuccessor(key, root);
+                    if (succ == NULL)
+                        {
+                            printf("No preorder successor for this node\n");
+                            break;
+                        }    
+                    printf("the preorder successor of %d is %d\n", data, succ->data);
+                    break;
+                }
+            case 2:
+                printf("The inorder display is: \n");
+                inorder(root);
+                printf("\n");
+                printf("Enter the node you want to find inorder successor of: ");
+                scanf("%d", &data);
+                key = findnode(root, data);
+                if (key->threadnode == 1 &&  (mode == 1 || mode == 2)) {
+                    //inorder threading one way or two way
+                    succ = key->right;
+                    printf("the inorder successor of %d is %d\n", data, succ->data);
+                    break;
+                }
+                else {
+                    succ = inordersuccessor(key, root);
+                    if (succ == NULL)
+                        {
+                            printf("No preorder successor for this node\n");
+                            break;
+                        }    
+                    printf("the preorder successor of %d is %d\n", data, succ->data);
+                    break;
+                }
+                case 3:
+                    printf("The postorder display is: \n");
+                    postorder(root);
+                    printf("\n");
+                    printf("Enter the node you want to find postorder successor of: ");
+                    scanf("%d", &data);
+                    key = findnode(root, data);
+                    succ = postordersuccessor(key, root);
+                    if (succ == NULL)
+                        {
+                            printf("No postorder successor for this node\n");
+                            break;
+                        }    
+                    printf("the postorder successor of %d is %d\n", data, succ->data);
+                    break;
+                case 4:
+                    printf("The inorder display is: \n");
+                    inorder(root);
+                    printf("\n");
+                    printf("Enter the node you want to find inorder predecessor of: ");
+                    scanf("%d", &data);
+                    key = findnode(root, data);
+                    if (key->threadnode == 1 &&  mode == 2) {
+                        //inorder threading two way
+                        pred = key->left;
+                        printf("the inorder predecessor of %d is %d\n", data, pred->data);
+                        break;
+                    }
+                    else {
+                        pred = inorderpredecessor(key, root);
+                        if (pred == NULL)
+                            {
+                                printf("No inorder predecessor for this node\n");
+                                break;
+                            }    
+                        printf("the inorder predecessor of %d is %d\n", data, pred->data);
+                        break;
+                    }
+                case 5:
+                    printf("The preorder display is: \n");
+                    preorder(root);
+                    printf("\n");
+                    printf("Enter the node you want to find preorder predecessor of: ");
+                    scanf("%d", &data);
+                    key = findnode(root, data);
+                    if (key->threadnode == 1 && mode == 4) {
+                        //preorder threading two way
+                        pred = key->left;
+                        printf("the preorder predecessor of %d is %d\n", data, pred->data);
+                        break;
+                    }
+                    else {
+                        pred = preorderpredecessor(key, root);
+                        if (pred == NULL)
+                            {
+                                printf("No preorder predecessor for this node\n");
+                                break;
+                            }    
+                        printf("the preorder predecessor of %d is %d\n", data, pred->data);
+                        break;
+                    }
+                case 6:
+                    printf("The postorder display is: \n");
+                    postorder(root);
+                    printf("\n");
+                    printf("Enter the node you want to find postorder predecessor of: ");
+                    scanf("%d", &data);
+                    key = findnode(root, data);
+                    succ = postorderpredecessor(key, root);
+                    if (succ == NULL)
+                        {
+                            printf("No postorder predecessor for this node\n");
+                            break;
+                        }    
+                    printf("the postorder predecessor of %d is %d\n", data, succ->data);
+                    break;
+                case 7:
+                    exit(0);
+        }
+
+    }
     return 0;
 
 }
@@ -86,6 +235,7 @@ void insert(tnode* root){
         printf("Enter the data: ");
         scanf("%d", &ptr->data);
         ptr->left = ptr->right = NULL;
+        ptr->threadnode = 0;
         root->left = ptr;
         ptr->parent = root;
         insert(root->left);
@@ -101,6 +251,7 @@ void insert(tnode* root){
         printf("Enter the data: ");
         scanf("%d", &ptr->data);
         ptr->left = ptr->right = NULL;
+        ptr->threadnode = 0;
         root->right = ptr;
         ptr->parent = root;
         insert(root->right);
@@ -234,33 +385,49 @@ tnode* postorderpredecessor(tnode* node, tnode* root){
 
 
 tnode* threaded_oneway_inord(tnode* node, tnode* root){
-    if (node->right == NULL)
+    if (node->right == NULL){
         node->right = inordersuccessor(node, root);
-    threaded_oneway(node->left, root);
-    threaded_oneway(node->right, root);
+        node->threadnode = 1;
+    }
+        
+    threaded_oneway_inord(node->left, root);
+    threaded_oneway_inord(node->right, root);
 }
 
 tnode* threaded_twoway_inord(tnode* node, tnode* root){
-    if (node->left == NULL)
+    if (node->left == NULL){
         node->left = inorderpredecessor(node, root);
-    if (node->right == NULL)
+        node->threadnode = 1;
+    }
+        
+    if (node->right == NULL){
         node->right = inordersuccessor(node, root);
-    threaded_twoway(node->left, root);
-    threaded_twoway(node->right, root);
+        node->threadnode = 1;
+    }
+        
+    threaded_twoway_inord(node->left, root);
+    threaded_twoway_inord(node->right, root);
 }
 
 tnode* threaded_oneway_preord(tnode* node, tnode* root){
-    if (node->right == NULL)
+    if (node->right == NULL){
         node->right = preordersuccessor(node, root);
+        node->threadnode = 1;
+    }
     threaded_oneway_preord(node->left, root);
     threaded_oneway_preord(node->right, root);
 }
 
 tnode* threaded_twoway_preord(tnode* node, tnode* root){
-    if (node->left == NULL)
+    if (node->left == NULL){
         node->left = preorderpredecessor(node, root);
-    if (node->right == NULL)
+        node->threadnode = 1;
+    }
+        
+    if (node->right == NULL){
         node->right = preordersuccessor(node, root);
+        node->threadnode = 1;
+    }
     threaded_twoway_preord(node->left, root);
     threaded_twoway_preord(node->right, root);
 }
